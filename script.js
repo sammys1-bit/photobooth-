@@ -51,8 +51,7 @@ startBtn.addEventListener('click', async () => {
   startBtn.disabled = true;
   capturedPhotos = [];
 
-  // Snap 2 photos
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 3; i++) {
     await runCountdown(3);
     takePhoto();
   }
@@ -88,7 +87,6 @@ function takePhoto() {
   tempCanvas.height = h;
   const tempCtx = tempCanvas.getContext('2d');
   
-  // Mirror webcam
   tempCtx.translate(w, 0);
   tempCtx.scale(-1, 1);
   tempCtx.drawImage(video, 0, 0, w, h);
@@ -99,6 +97,7 @@ function takePhoto() {
 function loadImage(src) {
   return new Promise((resolve) => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = src;
@@ -113,36 +112,55 @@ async function buildPhotoStrip() {
   const selectedTheme = themeSelect.value;
 
   canvas.width = 600;
-  canvas.height = 1200;
+  canvas.height = 1800;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // 1. Draw camera photos first
-  const slots = [
-    { x: 45, y: 180, w: 510, h: 420 }, // Slot 1
-    { x: 45, y: 660, w: 510, h: 420 }  // Slot 2
-  ];
+  // 1. DRAW CAMERA PHOTOS AT THE BOTTOM LAYER
+  const photoW = 430;
+  const photoH = 320;
+  const x = 85;
+  const startY = 175;
+  const gap = 465;
 
-  for (let i = 0; i < slots.length; i++) {
-    if (capturedPhotos[i]) {
-      const photo = await loadImage(capturedPhotos[i]);
-      if (photo) {
-        ctx.drawImage(photo, slots[i].x, slots[i].y, slots[i].w, slots[i].h);
-      }
+  for (let i = 0; i < capturedPhotos.length; i++) {
+    const photo = await loadImage(capturedPhotos[i]);
+    if (photo) {
+      ctx.drawImage(photo, x, startY + (i * gap), photoW, photoH);
     }
   }
 
-  // 2. Overlay frame template
+  // 2. PROCESS FRAME TEMPLATE TO MAKE BLACK PIXELS TRANSPARENT
   const frameImg = await loadImage(`${selectedTheme}.png`);
   if (frameImg) {
-    // Blends black boxes so photos underneath pop through
-    ctx.globalCompositeOperation = 'multiply';
-    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-    ctx.globalCompositeOperation = 'source-over';
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    tempCtx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+    
+    // Automatically convert pure/near black pixels to transparent
+    const imgData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      // If pixel is near-black (photo window area)
+      if (r < 30 && g < 30 && b < 30) {
+        data[i + 3] = 0; // Make pixel completely transparent
+      }
+    }
+    tempCtx.putImageData(imgData, 0, 0);
+
+    // Overlay the cleaned transparent frame over the photos
+    ctx.drawImage(tempCanvas, 0, 0);
   }
 
-  // Render to display modal
+  // 3. SHOW FINAL RESULT IN MODAL
   const finalDataUrl = canvas.toDataURL('image/png');
+
   stripContainer.innerHTML = '';
   const finalImage = new Image();
   finalImage.src = finalDataUrl;
