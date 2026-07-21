@@ -43,7 +43,7 @@ async function initWebcam() {
     video.srcObject = stream;
     await video.play();
   } catch (err) {
-    alert("Please allow camera access to use the photobooth!");
+    alert("Please allow camera access!");
   }
 }
 
@@ -51,7 +51,8 @@ startBtn.addEventListener('click', async () => {
   startBtn.disabled = true;
   capturedPhotos = [];
 
-  for (let i = 0; i < 4; i++) {
+  // Snap 2 photos
+  for (let i = 0; i < 2; i++) {
     await runCountdown(3);
     takePhoto();
   }
@@ -87,6 +88,7 @@ function takePhoto() {
   tempCanvas.height = h;
   const tempCtx = tempCanvas.getContext('2d');
   
+  // Mirror webcam
   tempCtx.translate(w, 0);
   tempCtx.scale(-1, 1);
   tempCtx.drawImage(video, 0, 0, w, h);
@@ -95,11 +97,10 @@ function takePhoto() {
 }
 
 function loadImage(src) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
-    img.onerror = (e) => reject(e);
+    img.onerror = () => resolve(null);
     img.src = src;
   });
 }
@@ -112,42 +113,41 @@ async function buildPhotoStrip() {
   const selectedTheme = themeSelect.value;
 
   canvas.width = 600;
-  canvas.height = 1800;
+  canvas.height = 1200;
 
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const slotW = 480;
-  const slotH = 320;
-  const xPos = 60;
-  const startY = 120;
-  const gap = 380;
+  // 1. Draw camera photos first
+  const slots = [
+    { x: 45, y: 180, w: 510, h: 420 }, // Slot 1
+    { x: 45, y: 660, w: 510, h: 420 }  // Slot 2
+  ];
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < slots.length; i++) {
     if (capturedPhotos[i]) {
-      try {
-        const photo = await loadImage(capturedPhotos[i]);
-        ctx.drawImage(photo, xPos, startY + (i * gap), slotW, slotH);
-      } catch (e) {
-        console.error("Photo draw error", e);
+      const photo = await loadImage(capturedPhotos[i]);
+      if (photo) {
+        ctx.drawImage(photo, slots[i].x, slots[i].y, slots[i].w, slots[i].h);
       }
     }
   }
 
-  try {
-    const frameImg = await loadImage(`${selectedTheme}.png`);
+  // 2. Overlay frame template
+  const frameImg = await loadImage(`${selectedTheme}.png`);
+  if (frameImg) {
+    // Blends black boxes so photos underneath pop through
+    ctx.globalCompositeOperation = 'multiply';
     ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-  } catch (err) {
-    console.warn("Frame image failed to load:", err);
+    ctx.globalCompositeOperation = 'source-over';
   }
 
+  // Render to display modal
   const finalDataUrl = canvas.toDataURL('image/png');
-
   stripContainer.innerHTML = '';
   const finalImage = new Image();
   finalImage.src = finalDataUrl;
   finalImage.style.width = '100%';
-  finalImage.style.maxHeight = '400px';
+  finalImage.style.maxHeight = '450px';
   finalImage.style.objectFit = 'contain';
   finalImage.style.border = '2px solid #333';
   finalImage.style.borderRadius = '6px';
