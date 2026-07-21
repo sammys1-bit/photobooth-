@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kawaii DIY Photobooth</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&family=Fredoka+One&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Secret Passcode Lock Screen -->
+  <div id="lock-screen">
+    <div class="lock-box">
+      <div class="lock-icon">🔒</div>
+      <h2>SECRET PHOTOBOOTH</h2>
+      <p class="riddle-text">What do I call you these days? 💭</p>
+
+      <div class="passcode-input-group">
+        <input type="text" id="passcode-input" placeholder="Type answer here..." maxlength="20">
+        <button id="unlock-btn">UNLOCK ✨</button>
+      </div>
+
+      <p id="lock-error" class="error-msg hidden">Nice try, imposter! ❌</p>
+    </div>
+  </div>
+
+  <!-- Main Scrapbook Container -->
+  <div class="booth-container">
+    <header class="booth-header">
+      <div class="ransom-title">
+        <span>P</span><span>H</span><span>O</span><span>T</span><span>O</span>
+        <span class="space"></span>
+        <span>B</span><span>O</span><span>O</span><span>T</span><span>H</span>
+      </div>
+      <div class="stars">★ ★ ★</div>
+    </header>
+
+    <div class="sub-banner">Let's make memories together</div>
+
+    <div class="booth-body">
+      <div class="control-panel">
+        <div class="price-tag">$1.00</div>
+        <div class="photos-count">
+          <p>4x PHOTOS</p>
+        </div>
+        <button id="start-btn" class="capture-btn">INSERT COINS HERE!</button>
+      </div>
+
+      <div class="webcam-stage">
+        <div class="booth-roof"></div>
+        <div class="curtain-container">
+          <video id="webcam" autoplay playsinline></video>
+          <div id="countdown-overlay" class="hidden">3</div>
+        </div>
+        <div class="smile-sign">
+          <p>SMILE!</p>
+          <div class="flash-icon">📷</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="photo-canvas" style="display: none;"></canvas>
+
+  <!-- Photo Strip Customization Modal -->
+  <div id="result-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Customize Your Strip! ✨</h2>
+      
+      <div class="options-group">
+        <div class="option-item">
+          <label for="theme-select"><b>Choose Frame Style:</b></label>
+          <select id="theme-select">
+            <option value="template1">🧸 Polaroid & Snoopy</option>
+            <option value="template2">🐱 Gingham Cat Scrapbook</option>
+            <option value="template3">💋 Romantic Kisses & Tulips</option>
+            <option value="template4">🍓 Strawberry Cat Ribbons</option>
+            <option value="template5">🐰 Judy & Nick (Zootopia)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="strip-container"></div>
+
+      <div class="button-group">
+        <button id="download-btn" class="save-btn">Download Strip 📸</button>
+        <button id="retake-btn" class="secondary-btn">Retake Photos 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
