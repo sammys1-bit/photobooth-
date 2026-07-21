@@ -41,6 +41,7 @@ async function initWebcam() {
       audio: false
     });
     video.srcObject = stream;
+    await video.play();
   } catch (err) {
     alert("Please allow camera access to use the photobooth!");
   }
@@ -55,7 +56,7 @@ startBtn.addEventListener('click', async () => {
     takePhoto();
   }
 
-  buildPhotoStrip();
+  await buildPhotoStrip();
   startBtn.disabled = false;
 });
 
@@ -80,13 +81,15 @@ function runCountdown(seconds) {
 
 function takePhoto() {
   const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = video.videoWidth;
-  tempCanvas.height = video.videoHeight;
+  const w = video.videoWidth || 640;
+  const h = video.videoHeight || 480;
+  tempCanvas.width = w;
+  tempCanvas.height = h;
   const tempCtx = tempCanvas.getContext('2d');
   
-  tempCtx.translate(tempCanvas.width, 0);
+  tempCtx.translate(w, 0);
   tempCtx.scale(-1, 1);
-  tempCtx.drawImage(video, 0, 0);
+  tempCtx.drawImage(video, 0, 0, w, h);
 
   capturedPhotos.push(tempCanvas.toDataURL('image/png'));
 }
@@ -94,8 +97,9 @@ function takePhoto() {
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
-    img.onerror = reject;
+    img.onerror = (e) => reject(e);
     img.src = src;
   });
 }
@@ -107,64 +111,44 @@ themeSelect.addEventListener('change', () => {
 async function buildPhotoStrip() {
   const selectedTheme = themeSelect.value;
 
+  canvas.width = 600;
+  canvas.height = 1800;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const slotW = 480;
+  const slotH = 320;
+  const xPos = 60;
+  const startY = 120;
+  const gap = 380;
+
+  for (let i = 0; i < 4; i++) {
+    if (capturedPhotos[i]) {
+      try {
+        const photo = await loadImage(capturedPhotos[i]);
+        ctx.drawImage(photo, xPos, startY + (i * gap), slotW, slotH);
+      } catch (e) {
+        console.error("Photo draw error", e);
+      }
+    }
+  }
+
   try {
     const frameImg = await loadImage(`${selectedTheme}.png`);
-
-    canvas.width = frameImg.width;
-    canvas.height = frameImg.height;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (selectedTheme === 'template1') {
-      const slotW = canvas.width * 0.65;
-      const slotH = canvas.height * 0.16;
-      const xPos = canvas.width * 0.175;
-      const startY = canvas.height * 0.20;
-      const gap = canvas.height * 0.182;
-
-      for (let i = 0; i < 4; i++) {
-        if (capturedPhotos[i]) {
-          const photo = await loadImage(capturedPhotos[i]);
-          ctx.drawImage(photo, xPos, startY + (i * gap), slotW, slotH);
-        }
-      }
-    } 
-    else if (selectedTheme === 'template2') {
-      const slotW = canvas.width * 0.58;
-      const slotH = canvas.height * 0.23;
-
-      if (capturedPhotos[0]) ctx.drawImage(await loadImage(capturedPhotos[0]), canvas.width * 0.14, canvas.height * 0.10, slotW, slotH);
-      if (capturedPhotos[1]) ctx.drawImage(await loadImage(capturedPhotos[1]), canvas.width * 0.38, canvas.height * 0.36, slotW, slotH);
-      if (capturedPhotos[2]) ctx.drawImage(await loadImage(capturedPhotos[2]), canvas.width * 0.08, canvas.height * 0.61, slotW, slotH);
-    } 
-    else if (selectedTheme === 'template3') {
-      const slotW = canvas.width * 0.68;
-      const slotH = canvas.height * 0.22;
-      const xPos = canvas.width * 0.16;
-
-      if (capturedPhotos[0]) ctx.drawImage(await loadImage(capturedPhotos[0]), xPos, canvas.height * 0.05, slotW, slotH);
-      if (capturedPhotos[1]) ctx.drawImage(await loadImage(capturedPhotos[1]), xPos, canvas.height * 0.36, slotW, slotH);
-      if (capturedPhotos[2]) ctx.drawImage(await loadImage(capturedPhotos[2]), xPos, canvas.height * 0.68, slotW, slotH);
-    } 
-    else if (selectedTheme === 'template4' || selectedTheme === 'template5') {
-      const slotW = canvas.width * 0.80;
-      const slotH = canvas.height * 0.32;
-      const xPos = canvas.width * 0.10;
-
-      if (capturedPhotos[0]) ctx.drawImage(await loadImage(capturedPhotos[0]), xPos, canvas.height * 0.18, slotW, slotH);
-      if (capturedPhotos[1]) ctx.drawImage(await loadImage(capturedPhotos[1]), xPos, canvas.height * 0.58, slotW, slotH);
-    }
-
-    ctx.drawImage(frameImg, 0, 0);
-
+    ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
   } catch (err) {
-    console.error("Frame failed to load.", err);
+    console.warn("Frame image failed to load:", err);
   }
+
+  const finalDataUrl = canvas.toDataURL('image/png');
 
   stripContainer.innerHTML = '';
   const finalImage = new Image();
-  finalImage.src = canvas.toDataURL('image/png');
-  finalImage.style.width = '200px';
+  finalImage.src = finalDataUrl;
+  finalImage.style.width = '100%';
+  finalImage.style.maxHeight = '400px';
+  finalImage.style.objectFit = 'contain';
   finalImage.style.border = '2px solid #333';
   finalImage.style.borderRadius = '6px';
   stripContainer.appendChild(finalImage);
@@ -173,10 +157,13 @@ async function buildPhotoStrip() {
 }
 
 downloadBtn.addEventListener('click', () => {
+  const dataUrl = canvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.download = 'kawaii-photobooth-strip.png';
-  link.href = canvas.toDataURL();
+  link.href = dataUrl;
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 });
 
 retakeBtn.addEventListener('click', () => { modal.classList.add('hidden'); });
