@@ -1,0 +1,264 @@
+body {
+  background-color: #f2efe9;
+  font-family: 'Courier Prime', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+}
+
+#lock-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #f2efe9;
+  background-image: repeating-linear-gradient(
+    45deg, #ffb7c5 0, #ffb7c5 15px, #ffffff 15px, #ffffff 30px
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.lock-box {
+  background: white;
+  border: 4px solid #333;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  box-shadow: 8px 8px 0px #333;
+  max-width: 320px;
+  width: 85%;
+}
+
+.lock-icon { font-size: 40px; margin-bottom: 10px; }
+.lock-box h2 { font-family: 'Fredoka One', cursive; margin: 5px 0; color: #333; }
+.riddle-text { font-size: 14px; font-weight: bold; margin: 15px 0; color: #555; }
+
+.passcode-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#passcode-input {
+  padding: 10px;
+  font-size: 16px;
+  text-align: center;
+  border: 2px solid #333;
+  border-radius: 6px;
+  font-family: 'Courier Prime', monospace;
+  font-weight: bold;
+}
+
+#unlock-btn {
+  background: #72d69b;
+  border: 2px solid #333;
+  padding: 10px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #333;
+}
+
+.error-msg { color: #ff4d6d; margin-top: 10px; font-size: 12px !important; }
+
+.booth-container {
+  width: 480px;
+  background: repeating-linear-gradient(
+    90deg, #a8d8ea, #a8d8ea 20px, #ffffff 20px, #ffffff 40px
+  );
+  border: 4px solid #333;
+  border-radius: 12px;
+  box-shadow: 8px 8px 0px #333;
+  padding: 15px;
+}
+
+.booth-header {
+  background-color: #72d69b;
+  border: 3px solid #333;
+  border-radius: 20px 20px 0 0;
+  padding: 15px;
+  text-align: center;
+}
+
+.ransom-title span {
+  display: inline-block;
+  background: white;
+  color: black;
+  font-family: 'Fredoka One', cursive;
+  font-size: 24px;
+  padding: 4px 8px;
+  margin: 2px;
+  border: 2px solid #333;
+  box-shadow: 2px 2px 0px #000;
+  transform: rotate(-3deg);
+}
+
+.ransom-title span:nth-child(even) { transform: rotate(3deg); }
+.ransom-title .space { width: 10px; background: transparent; border: none; box-shadow: none; }
+.stars { font-size: 18px; margin-top: 5px; }
+
+.sub-banner {
+  background: white;
+  border: 2px solid #333;
+  padding: 5px 15px;
+  display: table;
+  margin: 10px auto;
+  font-weight: bold;
+  transform: rotate(-2deg);
+  box-shadow: 3px 3px 0px #333;
+}
+
+.booth-body { display: flex; gap: 15px; margin-top: 15px; }
+
+.control-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.price-tag {
+  background: url('pricetag.png') no-repeat center center;
+  background-size: contain;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.photos-count {
+  background: #ffb7c5;
+  border: 2px solid #333;
+  padding: 10px;
+  width: 80%;
+  text-align: center;
+  font-weight: bold;
+  box-shadow: 3px 3px 0px #333;
+}
+
+.capture-btn {
+  background: #ffee93;
+  border: 3px solid #333;
+  padding: 12px 8px;
+  font-family: 'Fredoka One', cursive;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0px #333;
+}
+
+.webcam-stage {
+  flex: 1.5;
+  background: #ffd97d;
+  border: 3px solid #333;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.booth-roof { height: 25px; background: #333; border-radius: 6px 6px 0 0; }
+
+.curtain-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #000;
+  overflow: hidden;
+  border: 2px solid #333;
+}
+
+#webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+#countdown-overlay {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Fredoka One', cursive;
+  font-size: 64px;
+  color: #fff;
+  text-shadow: 4px 4px 0px #000;
+}
+
+.smile-sign {
+  background: white;
+  border: 2px solid #333;
+  margin-top: 10px;
+  padding: 5px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.hidden { display: none !important; }
+
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 4px solid #333;
+  text-align: center;
+  max-height: 90vh;
+  overflow-y: auto;
+  max-width: 360px;
+  width: 90%;
+}
+
+.options-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.option-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.option-item select {
+  font-family: 'Courier Prime', monospace;
+  padding: 4px;
+  border: 2px solid #333;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.save-btn, .secondary-btn {
+  margin: 10px 5px 0 5px;
+  padding: 10px 15px;
+  font-family: 'Fredoka One', cursive;
+  border: 2px solid #333;
+  cursor: pointer;
+}
+
+.save-btn { background: #72d69b; }
+.secondary-btn { background: #ffb7c5; }
+
+@media (max-width: 600px) {
+  .booth-container { width: 90%; padding: 10px; }
+  .booth-body { flex-direction: column; }
+  .curtain-container { height: 180px; }
+}
